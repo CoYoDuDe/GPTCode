@@ -10,11 +10,17 @@ Vielen Dank für dein Interesse an einer Mitarbeit an diesem Projekt. Um eine re
    python -m venv .venv
    source .venv/bin/activate  # Windows: .venv\\Scripts\\activate
    ```
-4. Abhängigkeiten installieren:
+4. Projekt im Editiermodus installieren (inkl. Runtime-Abhängigkeiten aus `pyproject.toml`):
    ```bash
-   pip install -r requirements.txt
+   pip install --upgrade pip
+   pip install -e .
    ```
-5. Optional: Vorhandene Beispielskripte in `docs/` lesen, um den Projektaufbau zu verstehen.
+5. Optional: Paketbau testen, um sicherzustellen, dass `pyproject.toml` konsistent ist:
+   ```bash
+   pip install --upgrade build
+   python -m build
+   ```
+6. Optional: Vorhandene Beispielskripte in `docs/` lesen, um den Projektaufbau zu verstehen.
 
 ## Branch- und PR-Workflow
 - Entwickle neue Features und Bugfixes stets auf einem eigenen Branch nach dem Schema `feature/<kurzbeschreibung>` oder `fix/<kurzbeschreibung>`.

@@ -431,7 +431,7 @@ def parse_cli_args(argv: List[str]) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
-if __name__ == "__main__":
+def main() -> None:
     check_runtime_prerequisites()
     cli_args = parse_cli_args(sys.argv[1:])
     ensure_config()
@@ -446,3 +446,7 @@ if __name__ == "__main__":
         model_override=cli_args.model,
         dryrun_override=dry_override,
     )
+
+
+if __name__ == "__main__":
+    main()

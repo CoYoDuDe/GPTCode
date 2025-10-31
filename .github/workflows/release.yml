@@ -1,0 +1,55 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  github-release:
+    name: GitHub Release erstellen
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Repository auschecken
+        uses: actions/checkout@v4
+
+      - name: Release Notes aus CHANGELOG extrahieren
+        id: notes
+        env:
+          TAG_NAME: ${{ github.ref_name }}
+        run: |
+          python <<'PY'
+import os
+import re
+import sys
+from pathlib import Path
+
+tag_name = os.environ.get("TAG_NAME")
+version = tag_name.lstrip("v") if tag_name else None
+if not version:
+    sys.exit("TAG_NAME nicht gesetzt.")
+text = Path("CHANGELOG.md").read_text(encoding="utf-8")
+pattern = re.compile(rf"^## \\[{re.escape(version)}\\].*?(?=^## \\[|\Z)", re.MULTILINE | re.DOTALL)
+match = pattern.search(text)
+if not match:
+    sys.exit(f"Keine Release-Notes für Version {version} gefunden.")
+section = match.group(0)
+section = re.sub(r"^## \\[[^\]]+\\][^\n]*\n?", "", section).strip()
+if not section:
+    sys.exit(f"Release-Notes für Version {version} sind leer.")
+with open("release-notes.md", "w", encoding="utf-8") as fh:
+    fh.write(section.strip() + "\n")
+PY
+
+      - name: Release erstellen
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          body_path: release-notes.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

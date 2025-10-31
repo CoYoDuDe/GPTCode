@@ -7,9 +7,10 @@
 2. [Quickstart](#quickstart)
 3. [Headless-Betrieb](#headless-betrieb)
 4. [Beispiele](#beispiele)
-5. [Troubleshooting](#troubleshooting)
-6. [Weitere Dokumente](#weitere-dokumente)
-7. [Lizenz](#lizenz)
+5. [Weiterführende Nutzung](#weiterführende-nutzung)
+6. [Troubleshooting](#troubleshooting)
+7. [Weitere Dokumente](#weitere-dokumente)
+8. [Lizenz](#lizenz)
 
 ## Features
 - **Chat-REPL**: natürliche Eingaben statt starrem CLI.
@@ -54,6 +55,9 @@ Empfehlungen:
 - **Release-Vorbereitung**: „Passe Changelogs an, incrementiere Version und starte Integrationstests.“
 
 Weitere Ablauf- und REPL-Details findest du in [USAGE.md](./USAGE.md).
+
+## Weiterführende Nutzung
+Für strukturierte Schritt-für-Schritt-Anleitungen, REPL-Referenzen sowie automatisierte Headless- und Auto-Beispiele lies [USAGE.md](./USAGE.md). Dort sind praxisnahe Workflows für `systemctl`, `docker compose` und `pytest` dokumentiert.
 
 ## Troubleshooting
 ### `externally-managed-environment` (PEP 668)

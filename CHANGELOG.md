@@ -7,6 +7,9 @@ folgt dem [SemVer](https://semver.org/lang/de/) Versionsschema.
 
 ## [Unreleased]
 
+### Geändert
+- Installationsskript um PEP-668-Hinweise, Prüfungen für git/docker/docker compose/pytest sowie Backups vorhandener Dateien erweitert.
+
 ## [0.1.0] - 2024-07-05
 ### Hinzugefügt
 - Datei `VERSION` mit initialer Projektversion `0.1.0` eingeführt.

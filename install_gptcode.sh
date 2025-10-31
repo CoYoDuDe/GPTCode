@@ -78,6 +78,7 @@ fi
 
 if [[ -d "$VENV_DIR" ]]; then
   backup_file "$VENV_DIR"
+  rm -rf "$VENV_DIR"
 fi
 
 python3 -m venv "$VENV_DIR"

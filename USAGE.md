@@ -33,6 +33,9 @@
    ```bash
    gptcode
    ```
+   Beim Start prüft GPTCode automatisch, ob `git` und `docker` im `PATH` liegen. Fehlt eines der Werkzeuge, wird der Start mit
+   einer Fehlermeldung abgebrochen. `pytest` ist optional; sollte es fehlen, weist GPTCode mit einer Warnung auf die Installation
+   (z. B. `pip install pytest`) hin, bevor Testläufe angefordert werden.
    Optional lassen sich Sitzungswerte temporär überschreiben:
    ```bash
    gptcode --model gpt-4o --dryrun on

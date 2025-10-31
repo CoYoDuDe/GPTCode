@@ -26,6 +26,12 @@
 - OpenAI API-Key (wird beim ersten Start abgefragt).
 - Optional: `docker` + `docker compose` für Container-Workloads, `pytest` für Tests.
 
+### Voraussetzungen prüfen
+Beim Start führt GPTCode einen schnellen Werkzeug-Check durch und beendet sich mit einer Fehlermeldung, falls `git` oder `docker`
+im `PATH` fehlen. Für `pytest` wird eine optionale Warnung ausgegeben – Tests lassen sich erst nach Installation ausführen.
+Nutze die Hinweise im Fehlertext (z. B. `sudo apt install git` oder die offiziellen Docker/pytest-Dokumentationen), um fehlende
+Pakete nachzurüsten, bevor du erneut startest.
+
 ### Installation
 ```bash
 sudo bash install_gptcode.sh

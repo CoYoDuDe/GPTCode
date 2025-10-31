@@ -1,54 +1,83 @@
 # GPTCode — Chat‑first DevOps/Coding Assistant (Claude‑Style, Terminal)
 
-**GPTCode** ist ein interaktiver Terminal‑Assistent, der wie „Claude Code“ arbeitet:
-Du startest ihn im Projektordner, chattest natürlich, und er kann – nach deiner Bestätigung –
-Dateien **lesen/schreiben**, **Patches anwenden**, **Befehle ausführen**, **Logs anzeigen**,
-**systemd** steuern, **Docker Compose** bedienen und **Tests** mit `pytest` ausführen.
-Außerdem gibt es einen **Auto/Headless‑Modus** (“finalisieren”).
+**GPTCode** ist ein interaktiver Terminal‑Assistent für DevOps‑ und Coding‑Workflows. Er kombiniert natürliche Sprache mit kontrollierten Automatisierungen und kann — nach deiner Freigabe — Dateien lesen/schreiben, Patches anwenden, Befehle ausführen, Logs analysieren, systemd steuern, Docker Compose bedienen und Tests über `pytest` anstoßen. Ein Headless-Modus erlaubt vollautomatische Finalisierungen.
+
+## Inhaltsverzeichnis
+1. [Features](#features)
+2. [Quickstart](#quickstart)
+3. [Headless-Betrieb](#headless-betrieb)
+4. [Beispiele](#beispiele)
+5. [Troubleshooting](#troubleshooting)
+6. [Weitere Dokumente](#weitere-dokumente)
+7. [Lizenz](#lizenz)
 
 ## Features
-- Chat‑REPL: natürliche Eingaben, kein starres CLI nötig
-- Werkzeugkasten (nach Bestätigung): `list_dir`, `read_file`, `write_file`, `apply_patch`, `run`
-- Extra‑Tools: `tail_file` (Logs), `systemctl`, `docker` (compose), `pytest`
-- **:dryrun on/off** für sichere Trockenläufe
-- **:auto on/off** für automatische Schrittfreigabe
-- **Headless**: `--headless --goal "…"`, um eine Finalisierungs‑Pipeline auszuführen
-- First‑Run‑Wizard: fragt nach API‑Key & Modell, speichert in `~/.config/gptcode/config.json`
+- **Chat-REPL**: natürliche Eingaben statt starrem CLI.
+- **Bestätigte Automatisierung**: Werkzeugkasten (`list_dir`, `read_file`, `write_file`, `apply_patch`, `run`) und Zusatztools (`tail_file`, `systemctl`, `docker`, `pytest`).
+- **Sicherheitsoptionen**: `:dryrun` für Trockenläufe, `:auto` für automatische Schrittfreigabe.
+- **Headless-Pipeline**: `--headless --goal "…"` zur unbeaufsichtigten Finalisierung.
+- **First-Run-Wizard**: fragt nach API-Key & Modell, speichert Konfiguration unter `~/.config/gptcode/config.json`.
 
-## Installation
+## Quickstart
+### Voraussetzungen
+- Debian/Ubuntu mit `python3`, `python3-venv`, `python3-pip`.
+- OpenAI API-Key (wird beim ersten Start abgefragt).
+- Optional: `docker` + `docker compose` für Container-Workloads, `pytest` für Tests.
+
+### Installation
 ```bash
 sudo bash install_gptcode.sh
 ```
 
-## Versionierung & Änderungen
-- Aktuelle Versionsnummer: siehe Datei [`VERSION`](./VERSION).
-- Detaillierte Änderungsübersicht: [`CHANGELOG.md`](./CHANGELOG.md) nach dem Schema von Keep a Changelog.
-
-## Nutzung
+### Erstes Projekt starten
 ```bash
 cd /dein/projekt
 gptcode
-# you> Analysiere das Projekt, härte nginx, schreibe systemd unit, führe Tests aus.
-# Bestätige Aktionen mit :yes (oder lehne ab mit :no)
 ```
+Formuliere deine Aufgaben in natürlicher Sprache und bestätige vorgeschlagene Aktionen mit `:yes` (oder lehne mit `:no` ab). Eine Übersicht aller REPL-Befehle findest du in [USAGE.md](./USAGE.md).
 
-### Nützliche REPL‑Befehle
-- `:help` – Hilfe
-- `:cwd` – Ordner anzeigen
-- `:cd <pfad>` – wechseln
-- `:dryrun on|off` – Schreib/Ausführ‑Dry‑Run
-- `:auto on|off` – Schritte automatisch erlauben
-- `:quit` – beenden
+## Headless-Betrieb
+Nutze den Headless-Modus für reproduzierbare Automatisierungen ohne Rückfragen. Hinterlege dazu ein klares Ziel inklusive Prüf- und Freigabeschritten:
 
-### Headless‑Modus (vorsichtig verwenden)
 ```bash
 gptcode --headless --goal "Analysiere, teste und finalisiere dieses Projekt (systemd, Nginx, Docker, PyTest)."
 ```
 
-## Voraussetzungen
-- Debian/Ubuntu mit `python3`, `python3-venv`, `python3-pip`
-- OpenAI API‑Key (wird beim ersten Start abgefragt)
-- Optional: `docker` + `docker compose` (für Docker‑Projekte), `pytest` (für Tests)
+Empfehlungen:
+- Nur in isolierten Test- oder Staging-Umgebungen einsetzen.
+- Log-Ausgabe (z. B. via `--log-file`) überwachen, um bei Bedarf eingreifen zu können.
+- Goals klar formulieren, inkl. Tests, Deployments und Rollback-Strategien.
+
+## Beispiele
+- **System-Härtung**: „Analysiere das Projekt, härte nginx, schreibe systemd unit, führe Tests aus.“
+- **Container-Workflow**: „Baue das Docker-Compose-Setup, aktualisiere Images und führe Smoke-Tests aus.“
+- **Release-Vorbereitung**: „Passe Changelogs an, incrementiere Version und starte Integrationstests.“
+
+Weitere Ablauf- und REPL-Details findest du in [USAGE.md](./USAGE.md).
+
+## Troubleshooting
+### `externally-managed-environment` (PEP 668)
+Wenn `pip` den Fehler `externally-managed-environment` meldet, befindet sich dein System-Python unter Paketmanager-Kontrolle (PEP 668). Zwei bewährte Lösungen:
+
+1. **Virtuelle Umgebung nutzen**
+   ```bash
+   python3 -m venv .venv
+   source .venv/bin/activate
+   pip install gptcode
+   ```
+2. **Isolierte Installation mit `pipx`**
+   ```bash
+   sudo apt install pipx
+   pipx ensurepath
+   pipx install gptcode
+   ```
+
+Beide Varianten halten das System-Python unverändert und bleiben konform zu PEP 668.
+
+## Weitere Dokumente
+- Aktuelle Versionsnummer: siehe [`VERSION`](./VERSION).
+- Ausführliche Nutzungsszenarien: [`USAGE.md`](./USAGE.md).
+- Detaillierte Änderungsübersicht nach „Keep a Changelog“: [`CHANGELOG.md`](./CHANGELOG.md).
 
 ## Lizenz
 MIT

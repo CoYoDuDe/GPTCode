@@ -381,7 +381,12 @@ def parse_cli_args(argv: List[str]) -> argparse.Namespace:
     parser.add_argument("--auto", action="store_true", help="Automatische Freigabe aktivieren")
     parser.add_argument("--model", metavar="NAME", help="Modell nur für diese Sitzung überschreiben")
     parser.add_argument("--dryrun", choices=["on","off"], help="Dry-Run nur für diese Sitzung setzen")
-    return parser.parse_args(argv)
+    # `parse_known_args` preserves backwards compatibility with legacy flags like
+    # `--log-file`/`--max-steps` that are documented but not yet implemented.
+    # Unknown options were historically ignored, so we intentionally drop them
+    # here instead of letting argparse terminate with an error.
+    parsed, _ = parser.parse_known_args(argv)
+    return parsed
 
 
 if __name__ == "__main__":

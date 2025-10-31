@@ -20,6 +20,10 @@ Außerdem gibt es einen **Auto/Headless‑Modus** (“finalisieren”).
 sudo bash install_gptcode.sh
 ```
 
+## Versionierung & Änderungen
+- Aktuelle Versionsnummer: siehe Datei [`VERSION`](./VERSION).
+- Detaillierte Änderungsübersicht: [`CHANGELOG.md`](./CHANGELOG.md) nach dem Schema von Keep a Changelog.
+
 ## Nutzung
 ```bash
 cd /dein/projekt

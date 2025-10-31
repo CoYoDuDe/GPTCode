@@ -7,7 +7,7 @@ GPTCode – Chat-first DevOps/Coding Assistent (Claude-Style) fürs Terminal
 - Modi: :dryrun on/off, :auto on/off, Headless (--headless --goal "..."), CLI-Overrides (--model, --dryrun)
 """
 import argparse
-import os, sys, json, subprocess
+import os, sys, json, subprocess, shutil
 from pathlib import Path
 from dataclasses import dataclass, field
 from typing import List, Dict, Any, Optional, Tuple
@@ -16,6 +16,53 @@ CONFIG_DIR = Path(os.path.expanduser("~/.config/gptcode"))
 CONFIG_FILE = CONFIG_DIR / "config.json"
 DEFAULT_MODEL = "gpt-4o-mini"
 DEFAULT_TIMEOUT = int(os.getenv("GPTCODE_TIMEOUT", "60"))  # sec
+
+
+def check_runtime_prerequisites() -> None:
+    """Stellt sicher, dass Kernwerkzeuge im PATH liegen."""
+
+    def _present(binary: str) -> bool:
+        return shutil.which(binary) is not None
+
+    missing_required = []
+    optional_warnings = []
+
+    requirements = (
+        ("git", True, "Installiere git (z. B. `sudo apt install git`) oder siehe https://git-scm.com/downloads."),
+        (
+            "docker",
+            True,
+            "Installiere Docker Engine inkl. Compose Plugin (siehe https://docs.docker.com/engine/install/).",
+        ),
+        (
+            "pytest",
+            False,
+            "Optionaler Test-Runner. Installiere via `pip install pytest` oder siehe https://docs.pytest.org/en/stable/.",
+        ),
+    )
+
+    for binary, required, hint in requirements:
+        if _present(binary):
+            continue
+        message = f"- {binary}: {hint}"
+        if required:
+            missing_required.append(message)
+        else:
+            optional_warnings.append(message)
+
+    if optional_warnings:
+        print(
+            "[HINWEIS] Empfohlene Zusatztools fehlen:\n" + "\n".join(optional_warnings),
+            file=sys.stderr,
+        )
+
+    if missing_required:
+        print(
+            "[FEHLER] Erforderliche Werkzeuge fehlen. Bitte installieren und erneut starten:\n"
+            + "\n".join(missing_required),
+            file=sys.stderr,
+        )
+        sys.exit(1)
 
 def ensure_config():
     CONFIG_DIR.mkdir(parents=True, exist_ok=True)
@@ -385,6 +432,7 @@ def parse_cli_args(argv: List[str]) -> argparse.Namespace:
 
 
 if __name__ == "__main__":
+    check_runtime_prerequisites()
     cli_args = parse_cli_args(sys.argv[1:])
     ensure_config()
     dry_override = None

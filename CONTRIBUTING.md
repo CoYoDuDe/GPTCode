@@ -1,6 +1,7 @@
 # Beitrag leisten
 
-Vielen Dank für dein Interesse an einer Mitarbeit an diesem Projekt. Um eine reibungslose Zusammenarbeit sicherzustellen, folge bitte den folgenden Leitlinien.
+Vielen Dank für dein Interesse an einer Mitarbeit an diesem Projekt. Um eine reibungslose Zusammenarbeit sicherzustellen, folge
+bitte den folgenden Leitlinien.
 
 ## Entwicklungsumgebung einrichten
 1. Repository forken und lokal klonen.
@@ -8,7 +9,7 @@ Vielen Dank für dein Interesse an einer Mitarbeit an diesem Projekt. Um eine re
 3. Virtuelle Umgebung anlegen und aktivieren:
    ```bash
    python -m venv .venv
-   source .venv/bin/activate  # Windows: .venv\\Scripts\\activate
+   source .venv/bin/activate  # Windows: .venv\Scripts\activate
    ```
 4. Projekt im Editiermodus installieren (inkl. Runtime-Abhängigkeiten aus `pyproject.toml`):
    ```bash
@@ -27,6 +28,14 @@ Vielen Dank für dein Interesse an einer Mitarbeit an diesem Projekt. Um eine re
 - Halte deinen Branch regelmäßig mit `main` synchron (`git fetch` + `git rebase`).
 - Erstelle Pull Requests frühzeitig, damit das Review-Team Feedback geben kann.
 - Beschreibe im PR klar das Problem, die Lösung und relevante Auswirkungen auf bestehende Funktionen.
+
+## Automatisierte Prüfungen
+- Für alle Pull Requests und Pushes auf `main` läuft der Workflow `.github/workflows/lint.yml`, der `ruff` (Linting) und `black --check` (Formatkontrolle) ausführt. Stelle sicher, dass beide Werkzeuge lokal ohne Fehler durchlaufen:
+  ```bash
+  ruff check .
+  black --check .
+  ```
+- Tags nach dem Schema `v*` lösen den Workflow `.github/workflows/release.yml` aus. Dieser erstellt automatisch einen GitHub-Release und verwendet den passenden Abschnitt aus `CHANGELOG.md` als Release Notes. Aktualisiere vor dem Taggen stets den `CHANGELOG.md` nach dem Keep-a-Changelog-Schema.
 
 ## Tests
 - Führe vor jedem Commit die verfügbaren Tests aus:

@@ -33,11 +33,11 @@ if ! command -v docker >/dev/null 2>&1; then
 else
   if ! docker compose version >/dev/null 2>&1; then
     if command -v docker-compose >/dev/null 2>&1; then
-      echo "[HINWEIS] docker compose (Plugin) nicht gefunden, verwende vorhandenes docker-compose Binary." >&2
+      echo "[FEHLT] 'docker compose' (Plugin) nicht verfügbar. Das Legacy-Binary 'docker-compose' wird nicht unterstützt. Installationshinweis: https://docs.docker.com/compose/install/" >&2
     else
       echo "[FEHLT] 'docker compose' nicht verfügbar. Installationshinweis: https://docs.docker.com/compose/install/" >&2
-      missing=1
     fi
+    missing=1
   fi
 fi
 

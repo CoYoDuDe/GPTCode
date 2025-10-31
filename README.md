@@ -16,6 +16,7 @@
 - **Chat-REPL**: natürliche Eingaben statt starrem CLI.
 - **Bestätigte Automatisierung**: Werkzeugkasten (`list_dir`, `read_file`, `write_file`, `apply_patch`, `run`) und Zusatztools (`tail_file`, `systemctl`, `docker`, `pytest`).
 - **Sicherheitsoptionen**: `:dryrun` für Trockenläufe, `:auto` für automatische Schrittfreigabe.
+- **Session-Overrides**: CLI-Flags `--model` und `--dryrun on|off` überschreiben Werte nur für die laufende Sitzung.
 - **Headless-Pipeline**: `--headless --goal "…"` zur unbeaufsichtigten Finalisierung.
 - **First-Run-Wizard**: fragt nach API-Key & Modell, speichert Konfiguration unter `~/.config/gptcode/config.json`.
 
@@ -37,12 +38,21 @@ gptcode
 ```
 Formuliere deine Aufgaben in natürlicher Sprache und bestätige vorgeschlagene Aktionen mit `:yes` (oder lehne mit `:no` ab). Eine Übersicht aller REPL-Befehle findest du in [USAGE.md](./USAGE.md).
 
+#### Temporäre Overrides (optional)
+```bash
+gptcode --model gpt-4o --dryrun on
+```
+- `--model <name>`: setzt das OpenAI-Modell nur für die aktuelle Session.
+- `--dryrun on|off`: aktiviert/deaktiviert Trockenlauf ohne die gespeicherte Konfiguration zu verändern.
+
 ## Headless-Betrieb
 Nutze den Headless-Modus für reproduzierbare Automatisierungen ohne Rückfragen. Hinterlege dazu ein klares Ziel inklusive Prüf- und Freigabeschritten:
 
 ```bash
 gptcode --headless --goal "Analysiere, teste und finalisiere dieses Projekt (systemd, Nginx, Docker, PyTest)."
 ```
+
+Weitere Headless-Flags lassen sich mit Overrides kombinieren, z. B. `gptcode --headless --goal "…" --model gpt-4o-mini --dryrun off` für ein explizites Modell und reale Ausführung.
 
 Empfehlungen:
 - Nur in isolierten Test- oder Staging-Umgebungen einsetzen.

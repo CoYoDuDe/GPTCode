@@ -33,6 +33,12 @@
    ```bash
    gptcode
    ```
+   Optional lassen sich Sitzungswerte temporär überschreiben:
+   ```bash
+   gptcode --model gpt-4o --dryrun on
+   ```
+   - `--model <name>` wechselt das verwendete Modell nur für die aktuelle Sitzung.
+   - `--dryrun on|off` aktiviert/deaktiviert Trockenläufe ohne die Konfiguration zu ändern.
 3. **Aufgaben formulieren**
    - Beschreibe Ziele und Akzeptanzkriterien natürlichsprachlich.
    - Lass dir Vorhaben bestätigen und nutze `:yes` / `:no`, um einzelne Schritte freizugeben.
@@ -65,6 +71,7 @@ gptcode --headless --goal "Analysiere, teste und finalisiere dieses Projekt (sys
 - `--log-file /var/log/gptcode-headless.log` zum Mitschreiben der Aktionen.
 - `--max-steps 200` zur Begrenzung automatischer Iterationen.
 - Kombination mit `:dryrun on` im Goal-Text für konservative Abläufe.
+- `--model <name>` und `--dryrun on|off` kombinieren Headless-Läufe mit temporären Sitzungswerten (z. B. spezielles Modell, Testlauf).
 
 ### Auto-Mode innerhalb interaktiver Sessions
 Wenn du eine Session nicht komplett headless führen möchtest, kannst du `:auto on` aktivieren. GPTCode bestätigt dann Folgeaktionen automatisch, bis `:auto off` gesetzt wird oder ein Fehler auftritt.
@@ -121,6 +128,7 @@ Die folgenden Szenarien zeigen komplette Ablaufketten, die du GPTCode vorgeben k
 
 ## Konfiguration & Speicherorte
 - **Benutzerkonfiguration**: `~/.config/gptcode/config.json` (API-Key, Modell, Default-Modus).
+- **Temporäre Overrides**: CLI-Flags `--model` / `--dryrun` überschreiben nur die laufende Sitzung und hinterlassen keine Spuren in der Konfiguration.
 - **Logs**: konfigurierbar via `--log-file`, Standardausgabe innerhalb der Session.
 - **Projektstatus**: GPTCode verändert ausschließlich freigegebene Dateien innerhalb des aktuellen Arbeitsverzeichnisses.
 

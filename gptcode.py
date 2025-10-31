@@ -4,12 +4,13 @@ GPTCode – Chat-first DevOps/Coding Assistent (Claude-Style) fürs Terminal
 - Start: `gptcode` im Projektordner
 - First-Run: fragt API-Key + Modell und legt Config an
 - Tools: list_dir, read_file, write_file, apply_patch, run, tail_file, systemctl, docker, pytest
-- Modi: :dryrun on/off, :auto on/off, Headless (--headless --goal "...")
+- Modi: :dryrun on/off, :auto on/off, Headless (--headless --goal "..."), CLI-Overrides (--model, --dryrun)
 """
+import argparse
 import os, sys, json, subprocess
 from pathlib import Path
 from dataclasses import dataclass, field
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Tuple
 
 CONFIG_DIR = Path(os.path.expanduser("~/.config/gptcode"))
 CONFIG_FILE = CONFIG_DIR / "config.json"
@@ -40,8 +41,7 @@ def save_config(cfg: dict):
 try:
     from openai import OpenAI
 except Exception:
-    print("[FEHLER] openai-SDK fehlt. Bitte Installer erneut ausführen.", file=sys.stderr)
-    sys.exit(1)
+    OpenAI = None  # type: ignore[assignment]
 
 SYSTEM_PROMPT_TMPL = (
     "Du bist ein Chat-first DevOps/Coding-Assistent (Claude-Style). "
@@ -66,7 +66,7 @@ HELP = (
 
 @dataclass
 class Session:
-    client: OpenAI
+    client: Any
     model: str
     dryrun: bool = False
     auto: bool = False
@@ -254,16 +254,29 @@ def headless_loop(sess, goal: str, max_steps: int=30):
     else:
         print("[headless] Max Steps erreicht.")
 
-def repl(headless: bool=False, goal: Optional[str]=None, auto: Optional[bool]=None):
+def determine_session_settings(cfg: Dict[str, Any], model_override: Optional[str]=None,
+                               dryrun_override: Optional[bool]=None) -> Tuple[str, bool]:
+    model = (model_override or cfg.get("model") or DEFAULT_MODEL)
+    dryrun = dryrun_override if dryrun_override is not None else bool(cfg.get("dryrun", False))
+    return model, dryrun
+
+
+def repl(headless: bool=False, goal: Optional[str]=None, auto: Optional[bool]=None,
+         model_override: Optional[str]=None, dryrun_override: Optional[bool]=None):
+    if OpenAI is None:
+        print("[FEHLER] openai-SDK fehlt. Bitte Installer erneut ausführen.", file=sys.stderr)
+        sys.exit(1)
+
     cfg = load_config()
     os.environ["OPENAI_API_KEY"] = cfg.get("api_key","")
-    model = cfg.get("model", DEFAULT_MODEL)
+    model, dryrun = determine_session_settings(cfg, model_override=model_override,
+                                               dryrun_override=dryrun_override)
     client = OpenAI()
-    sess = Session(client=client, model=model, dryrun=bool(cfg.get("dryrun", False)))
+    sess = Session(client=client, model=model, dryrun=dryrun)
     if auto is not None:
         sess.auto = auto
 
-    HELP = (
+    help_text = (
         ":help – Hilfe\n"
         ":cwd – aktuelles Verzeichnis\n"
         ":cd <pfad> – wechseln\n"
@@ -272,7 +285,8 @@ def repl(headless: bool=False, goal: Optional[str]=None, auto: Optional[bool]=No
         ":auto on|off – Schritte automatisch erlauben\n"
         ":quit – beenden\n"
     )
-    print(f"GPTCode bereit – Modell: {model}\nProjekt: {Path.cwd()}\n\n{HELP}")
+    dry_info = "on" if sess.dryrun else "off"
+    print(f"GPTCode bereit – Modell: {sess.model} (dryrun={dry_info})\nProjekt: {Path.cwd()}\n\n{help_text}")
 
     if headless and goal:
         print("[Headless] Auto-Modus gestartet: ", goal)
@@ -304,12 +318,13 @@ def repl(headless: bool=False, goal: Optional[str]=None, auto: Optional[bool]=No
         if user.startswith(":dryrun"):
             _, _, val = user.partition(" ")
             val = val.strip().lower()
-            cfg = load_config()
             if val in {"on","off"}:
+                cfg = load_config()
                 cfg["dryrun"] = (val=="on"); save_config(cfg)
-                print(f"dryrun={cfg['dryrun']}")
+                sess.dryrun = (val=="on")
+                print(f"dryrun={sess.dryrun}")
             else:
-                print(f"dryrun aktuell: {cfg.get('dryrun', False)}")
+                print(f"dryrun aktuell: {sess.dryrun}")
             continue
         if user.startswith(":auto"):
             _, _, val = user.partition(" ")
@@ -359,19 +374,27 @@ def repl(headless: bool=False, goal: Optional[str]=None, auto: Optional[bool]=No
         else:
             print(ai.strip()); sess.add("assistant", ai)
 
+def parse_cli_args(argv: List[str]) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(prog="gptcode", description="GPTCode – Chat-first DevOps/Coding Assistent")
+    parser.add_argument("--headless", action="store_true", help="Headless-Modus aktivieren")
+    parser.add_argument("--goal", metavar="TEXT", help="Zielbeschreibung für Headless-Läufe")
+    parser.add_argument("--auto", action="store_true", help="Automatische Freigabe aktivieren")
+    parser.add_argument("--model", metavar="NAME", help="Modell nur für diese Sitzung überschreiben")
+    parser.add_argument("--dryrun", choices=["on","off"], help="Dry-Run nur für diese Sitzung setzen")
+    return parser.parse_args(argv)
+
+
 if __name__ == "__main__":
-    headless = False
-    goal = None
-    auto_flag = None
-    args = sys.argv[1:]
-    if "--headless" in args:
-        headless = True
-    if "--auto" in args:
-        auto_flag = True
-    if "--goal" in args:
-        try:
-            gi = args.index("--goal"); goal = args[gi+1]
-        except Exception:
-            print("--goal benötigt ein Argument."); sys.exit(1)
+    cli_args = parse_cli_args(sys.argv[1:])
     ensure_config()
-    repl(headless=headless, goal=goal, auto=auto_flag)
+    dry_override = None
+    if cli_args.dryrun is not None:
+        dry_override = (cli_args.dryrun == "on")
+    auto_flag = True if cli_args.auto else None
+    repl(
+        headless=cli_args.headless,
+        goal=cli_args.goal,
+        auto=auto_flag,
+        model_override=cli_args.model,
+        dryrun_override=dry_override,
+    )

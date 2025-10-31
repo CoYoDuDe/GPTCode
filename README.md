@@ -33,8 +33,27 @@ Nutze die Hinweise im Fehlertext (z. B. `sudo apt install git` oder die offizi
 Pakete nachzurüsten, bevor du erneut startest.
 
 ### Installation
+#### Über `pipx` (empfohlen)
+```bash
+pipx install .
+```
+
+#### Virtuelle Umgebung + `pip`
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install .
+```
+
+#### Systemweiter Installer (legt isoliertes venv unter `/opt/gptcode` an)
 ```bash
 sudo bash install_gptcode.sh
+```
+
+#### Paket bauen (Wheel/Sdist)
+```bash
+pip install --upgrade build
+python -m build
 ```
 
 ### Erstes Projekt starten

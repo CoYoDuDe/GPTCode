@@ -11,7 +11,44 @@ cat <<'INFO'
 • Abbruch mit STRG+C, falls Sie zunächst ein Backup oder eine eigene venv anlegen möchten.
 INFO
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_SOURCE="${BASH_SOURCE[0]:-}"
+SCRIPT_DIR=""
+INSTALL_SOURCE=""
+INSTALL_SOURCE_LABEL=""
+TEMP_WORKDIR=""
+REMOTE_INSTALL=0
+REPO_URL="https://github.com/CoYoDuDe/GPTCode.git"
+
+DESIRED_REF="${GPTCODE_VERSION:-${GPTCODE_REF:-}}"
+
+if [[ -n "$SCRIPT_SOURCE" && -f "$SCRIPT_SOURCE" ]]; then
+  SCRIPT_DIR="$(cd "$(dirname "$SCRIPT_SOURCE")" && pwd)"
+  INSTALL_SOURCE="$SCRIPT_DIR"
+  if [[ -z "$DESIRED_REF" && -f "$SCRIPT_DIR/VERSION" ]]; then
+    DESIRED_REF="$(<"$SCRIPT_DIR/VERSION")"
+  fi
+  if [[ -n "$DESIRED_REF" ]]; then
+    INSTALL_SOURCE_LABEL="lokalem Checkout ($SCRIPT_DIR, Version $DESIRED_REF)"
+  else
+    INSTALL_SOURCE_LABEL="lokalem Checkout ($SCRIPT_DIR)"
+  fi
+else
+  TEMP_WORKDIR="$(mktemp -d)"
+  trap '[[ -n "$TEMP_WORKDIR" && -d "$TEMP_WORKDIR" ]] && rm -rf "$TEMP_WORKDIR"' EXIT
+  if [[ -z "$DESIRED_REF" ]]; then
+    DESIRED_REF="main"
+  fi
+  REMOTE_INSTALL=1
+  INSTALL_SOURCE_LABEL="GitHub-Ref '${DESIRED_REF}'"
+fi
+
+if [[ -z "$INSTALL_SOURCE" ]]; then
+  INSTALL_SOURCE="$SCRIPT_DIR"
+fi
+
+if [[ -z "$INSTALL_SOURCE_LABEL" ]]; then
+  INSTALL_SOURCE_LABEL="lokalem Checkout ($SCRIPT_DIR)"
+fi
 PREFIX="/usr/local"
 BIN_DIR="$PREFIX/bin"
 APP_DIR="/opt/gptcode"
@@ -56,6 +93,18 @@ apt-get install -y python3 python3-venv python3-pip git ca-certificates
 
 mkdir -p "$APP_DIR" "$BIN_DIR"
 
+if (( REMOTE_INSTALL )); then
+  echo "[INFO] Lade GPTCode (${DESIRED_REF}) nach $TEMP_WORKDIR ..."
+  if git clone --depth 1 --branch "$DESIRED_REF" "$REPO_URL" "$TEMP_WORKDIR/GPTCode" >/dev/null 2>&1; then
+    INSTALL_SOURCE="$TEMP_WORKDIR/GPTCode"
+    INSTALL_SOURCE_LABEL="GitHub-Klon (${DESIRED_REF})"
+  else
+    INSTALL_SOURCE="git+${REPO_URL}@${DESIRED_REF}"
+    INSTALL_SOURCE_LABEL="GitHub-Ref '${DESIRED_REF}' (direkte Installation)"
+    echo "[WARN] Git-Klon fehlgeschlagen, wechsle zu direkter Installation via pip." >&2
+  fi
+fi
+
 backup_file() {
   local target="$1"
   if [[ -e "$target" ]]; then
@@ -82,7 +131,8 @@ fi
 
 python3 -m venv "$VENV_DIR"
 "$VENV_DIR/bin/python" -m pip install --upgrade pip setuptools wheel
-"$VENV_DIR/bin/pip" install --upgrade "$SCRIPT_DIR"
+echo "[INFO] Installationsquelle: $INSTALL_SOURCE_LABEL"
+"$VENV_DIR/bin/pip" install --upgrade "$INSTALL_SOURCE"
 
 wrapper="$BIN_DIR/gptcode"
 backup_file "$wrapper"
@@ -92,6 +142,7 @@ exec /opt/gptcode/venv/bin/python -m gptcode "$@"
 SH
 chmod +x "$wrapper"
 
-echo "\n✅ GPTCode wurde erfolgreich in $VENV_DIR installiert."
+printf "\n✅ GPTCode wurde erfolgreich in %s installiert. (Quelle: %s)\n" \
+  "$VENV_DIR" "$INSTALL_SOURCE_LABEL"
 echo "Start: gptcode"
 echo "Konfiguration: ~/.config/gptcode/config.json"

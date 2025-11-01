@@ -65,6 +65,7 @@ def test_determine_session_settings_defaults():
 def test_docker_compose_resolves_variants(monkeypatch, scenario):
     monkeypatch.delenv("GPTCODE_DOCKER_COMPOSE_LEGACY", raising=False)
     gptcode._DOCKER_COMPOSE_CMD = None
+    monkeypatch.setattr(gptcode, "DOCKER_FEATURES_AVAILABLE", True)
     calls = []
 
     def fake_run(cmd, stdout=None, stderr=None, text=None, **kwargs):
@@ -94,3 +95,10 @@ def test_docker_compose_resolves_variants(monkeypatch, scenario):
         assert "up" in calls[0]
 
     assert "[docker] rc=0" in result
+
+
+def test_docker_compose_returns_hint_when_disabled(monkeypatch):
+    monkeypatch.setattr(gptcode, "DOCKER_FEATURES_AVAILABLE", False)
+    gptcode._DOCKER_COMPOSE_CMD = None
+    result = gptcode.docker_compose("logs")
+    assert "Docker-Unterstützung ist deaktiviert" in result

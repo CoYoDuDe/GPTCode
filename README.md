@@ -24,15 +24,13 @@
 ### Voraussetzungen
 - Debian/Ubuntu mit `python3`, `python3-venv`, `python3-pip`.
 - OpenAI API-Key (wird beim ersten Start abgefragt).
-- Optional: `docker` + `docker compose` für Container-Workloads (automatische Fallbacks auf ein vorhandenes `docker-compose`-Binary sind integriert), `pytest` für Tests.
+- Optional: `docker` + `docker compose` für Container-Workloads (automatische Fallbacks auf ein vorhandenes `docker-compose`-Binary sind integriert). Fehlen die Binaries, deaktiviert GPTCode die Docker-Funktionen und weist beim Start darauf hin.
+- Optional: `pytest` für automatisierte Testläufe.
 
 ### Voraussetzungen prüfen
-Beim Start führt GPTCode einen schnellen Werkzeug-Check durch und beendet sich mit einer Fehlermeldung, falls `git` oder `docker`
-im `PATH` fehlen. Für Compose-Stacks versucht GPTCode zuerst `docker compose` und nutzt – falls nicht verfügbar – automatisch ein
-erkanntes `docker-compose`-Binary (der Installer hinterlegt Legacy-Pfade für nachfolgende Aufrufe). Für `pytest` wird eine
-optionale Warnung ausgegeben – Tests lassen sich erst nach Installation ausführen.
-Nutze die Hinweise im Fehlertext (z. B. `sudo apt install git` oder die offiziellen Docker/pytest-Dokumentationen), um fehlende
-Pakete nachzurüsten, bevor du erneut startest.
+Beim Start führt GPTCode einen schnellen Werkzeug-Check durch und beendet sich nur dann mit einer Fehlermeldung, wenn `git` im `PATH` fehlt.
+Optionale Tools erzeugen Hinweiszeilen: Fehlen `docker`/`docker compose`, bleiben alle Docker-Kommandos deaktiviert, bis ein Binary nachinstalliert wurde; GPTCode greift weiterhin automatisch auf ein vorhandenes Legacy-`docker-compose` zurück, sobald es verfügbar ist. Für `pytest` erscheint eine optionale Erinnerung, bevor Testläufe angefordert werden.
+Nutze die Hinweise im Fehlertext (z. B. `sudo apt install git` oder die offiziellen Docker-/pytest-Dokumentationen), um fehlende Pakete nachzurüsten.
 
 ### Installation
 #### Über `pipx` (empfohlen)
@@ -107,6 +105,9 @@ Weitere Ablauf- und REPL-Details findest du in [USAGE.md](./USAGE.md).
 Für strukturierte Schritt-für-Schritt-Anleitungen, REPL-Referenzen sowie automatisierte Headless- und Auto-Beispiele lies [USAGE.md](./USAGE.md). Dort sind praxisnahe Workflows für `systemctl`, `docker compose` und `pytest` dokumentiert.
 
 ## Troubleshooting
+### Docker-Unterstützung deaktiviert
+Beim Start ohne `docker` oder `docker-compose` zeigt GPTCode den Hinweis `Docker-Funktionen bleiben deaktiviert, bis `docker` oder `docker-compose` installiert und ausführbar ist`. Installiere die Docker Engine inklusive Compose Plugin ([docs.docker.com/engine/install](https://docs.docker.com/engine/install/)) oder ein Legacy-`docker-compose`-Binary und starte GPTCode anschließend erneut. Sobald ein Binary verfügbar ist, stehen die Compose-Werkzeuge wieder zur Verfügung.
+
 ### `externally-managed-environment` (PEP 668)
 Wenn `pip` den Fehler `externally-managed-environment` meldet, befindet sich dein System-Python unter Paketmanager-Kontrolle (PEP 668). Zwei bewährte Lösungen:
 

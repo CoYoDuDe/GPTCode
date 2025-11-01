@@ -20,25 +20,46 @@ DOCKER_LEGACY_ENV = "GPTCODE_DOCKER_COMPOSE_LEGACY"
 _DOCKER_COMPOSE_CMD: Optional[List[str]] = None
 
 
+def _docker_binaries_present() -> bool:
+    """Prüft, ob mindestens ein Docker-/Compose-Binary verfügbar ist."""
+
+    if shutil.which("docker"):
+        return True
+    if shutil.which("docker-compose"):
+        return True
+    legacy_override = os.getenv(DOCKER_LEGACY_ENV)
+    if legacy_override:
+        candidate = legacy_override.strip()
+        if candidate and (shutil.which(candidate) or Path(candidate).exists()):
+            return True
+    return False
+
+
+DOCKER_FEATURES_AVAILABLE: bool = _docker_binaries_present()
+
+
 def check_runtime_prerequisites() -> None:
     """Stellt sicher, dass Kernwerkzeuge im PATH liegen."""
+
+    global DOCKER_FEATURES_AVAILABLE
 
     def _present(binary: str) -> bool:
         return shutil.which(binary) is not None
 
-    missing_required = []
-    optional_warnings = []
+    missing_required: List[str] = []
+    optional_warnings: List[str] = []
 
     requirements = (
         ("git", True, "Installiere git (z. B. `sudo apt install git`) oder siehe https://git-scm.com/downloads."),
+    )
+
+    optional_tools = (
         (
             "docker",
-            True,
             "Installiere Docker Engine inkl. Compose Plugin (siehe https://docs.docker.com/engine/install/).",
         ),
         (
             "pytest",
-            False,
             "Optionaler Test-Runner. Installiere via `pip install pytest` oder siehe https://docs.pytest.org/en/stable/.",
         ),
     )
@@ -52,9 +73,31 @@ def check_runtime_prerequisites() -> None:
         else:
             optional_warnings.append(message)
 
+    DOCKER_FEATURES_AVAILABLE = _docker_binaries_present()
+    if not DOCKER_FEATURES_AVAILABLE:
+        optional_warnings.append(
+            "- docker/docker compose: Docker-Unterstützung ist deaktiviert, bis ein Docker- oder Docker-Compose-Binary im PATH"
+            " verfügbar ist."
+        )
+
+    for binary, hint in optional_tools:
+        if binary == "docker":
+            # Bereits oben geprüft, Hinweis ggf. ergänzt.
+            continue
+        if not _present(binary):
+            optional_warnings.append(f"- {binary}: {hint}")
+
     if optional_warnings:
         print(
-            "[HINWEIS] Empfohlene Zusatztools fehlen:\n" + "\n".join(optional_warnings),
+            "[HINWEIS] Empfohlene Zusatztools fehlen oder sind deaktiviert:\n"
+            + "\n".join(optional_warnings),
+            file=sys.stderr,
+        )
+
+    if not DOCKER_FEATURES_AVAILABLE:
+        print(
+            "[HINWEIS] Docker-Funktionen bleiben deaktiviert, bis `docker` oder `docker-compose` installiert und ausführbar ist"
+            " (Compose-Plugin oder Legacy-Binary).",
             file=sys.stderr,
         )
 
@@ -253,6 +296,11 @@ def resolve_docker_compose_base() -> List[str]:
 def docker_compose(action: str, service: Optional[str]=None) -> str:
     if action not in {"up","down","build","logs"}:
         return f"[docker] Ungültige Action: {action}"
+    if not DOCKER_FEATURES_AVAILABLE:
+        return (
+            "[docker] Docker-Unterstützung ist deaktiviert, weil kein ausführbares `docker`/`docker-compose` gefunden wurde. "
+            "Installiere Docker Engine inkl. Compose Plugin oder ein Legacy-`docker-compose`-Binary."
+        )
     base = resolve_docker_compose_base()
     if action == "up":
         cmd = base + ["up","-d"] + ([service] if service else [])

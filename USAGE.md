@@ -33,9 +33,7 @@
    ```bash
    gptcode
    ```
-   Beim Start prüft GPTCode automatisch, ob `git` und `docker` im `PATH` liegen. Fehlt eines der Werkzeuge, wird der Start mit
-   einer Fehlermeldung abgebrochen. `pytest` ist optional; sollte es fehlen, weist GPTCode mit einer Warnung auf die Installation
-   (z. B. `pip install pytest`) hin, bevor Testläufe angefordert werden.
+   Beim Start prüft GPTCode automatisch die wichtigsten Werkzeuge. `git` ist Pflicht und beendet den Start bei Abwesenheit mit einer Fehlermeldung. Fehlen optionale Tools, erscheinen Warnhinweise: Ohne `docker`/`docker compose` bleiben alle Docker-Kommandos deaktiviert, bis ein Binary verfügbar ist; `pytest` wird erst nach Installation für Testläufe angeboten (z. B. via `pip install pytest`).
    Optional lassen sich Sitzungswerte temporär überschreiben:
    ```bash
    gptcode --model gpt-4o --dryrun on
@@ -137,6 +135,10 @@ Die folgenden Szenarien zeigen komplette Ablaufketten, die du GPTCode vorgeben k
 - **Temporäre Overrides**: CLI-Flags `--model` / `--dryrun` überschreiben nur die laufende Sitzung und hinterlassen keine Spuren in der Konfiguration.
 - **Logs**: konfigurierbar via `--log-file`, Standardausgabe innerhalb der Session.
 - **Projektstatus**: GPTCode verändert ausschließlich freigegebene Dateien innerhalb des aktuellen Arbeitsverzeichnisses.
+
+## Troubleshooting
+### Docker-Unterstützung deaktiviert
+Erscheint beim Start der Hinweis, dass Docker-Funktionen deaktiviert bleiben, ist kein ausführbares `docker` oder `docker-compose` im `PATH`. Installiere die Docker Engine inklusive Compose Plugin (siehe [docs.docker.com/engine/install](https://docs.docker.com/engine/install/)) oder hinterlege ein Legacy-`docker-compose`-Binary und starte GPTCode erneut. Sobald ein Binary verfügbar ist, stehen die Docker-Werkzeuge wieder zur Verfügung.
 
 ## Weiterführende Ressourcen
 - Systemd Referenz: [systemd.unit(5)](https://www.freedesktop.org/software/systemd/man/latest/systemd.unit.html)

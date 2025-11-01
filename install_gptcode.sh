@@ -17,11 +17,15 @@ INSTALL_SOURCE=""
 INSTALL_SOURCE_LABEL=""
 TEMP_WORKDIR=""
 REMOTE_INSTALL=0
+FORCE_REMOTE_INSTALL=0
+if [[ "${GPTCODE_REMOTE_INSTALL:-}" == "1" ]]; then
+  FORCE_REMOTE_INSTALL=1
+fi
 REPO_URL="https://github.com/CoYoDuDe/GPTCode.git"
 
 DESIRED_REF="${GPTCODE_VERSION:-${GPTCODE_REF:-}}"
 
-if [[ -n "$SCRIPT_SOURCE" && -f "$SCRIPT_SOURCE" ]]; then
+if (( !FORCE_REMOTE_INSTALL )) && [[ -n "$SCRIPT_SOURCE" && -f "$SCRIPT_SOURCE" ]]; then
   SCRIPT_DIR="$(cd "$(dirname "$SCRIPT_SOURCE")" && pwd)"
   INSTALL_SOURCE="$SCRIPT_DIR"
   if [[ -z "$DESIRED_REF" && -f "$SCRIPT_DIR/VERSION" ]]; then

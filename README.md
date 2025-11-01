@@ -47,6 +47,10 @@ pip install .
 
 #### Systemweiter Installer (legt isoliertes venv unter `/opt/gptcode` an)
 ```bash
+curl -fsSL https://raw.githubusercontent.com/CoYoDuDe/GPTCode/main/install.sh | sudo bash
+```
+
+```bash
 sudo bash install_gptcode.sh
 ```
 

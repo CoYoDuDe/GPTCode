@@ -28,4 +28,5 @@ download_installer() {
 
 download_installer
 chmod +x "$TMP_INSTALLER"
+export GPTCODE_REMOTE_INSTALL=1
 exec "$TMP_INSTALLER" "$@"

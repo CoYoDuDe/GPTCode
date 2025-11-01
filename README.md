@@ -46,6 +46,12 @@ pip install .
 ```
 
 #### Systemweiter Installer (legt isoliertes venv unter `/opt/gptcode` an)
+Das Wrapper-Skript [`install.sh`](./install.sh) prüft automatisch, ob es aus einem echten Dateipfad oder via Pipe/`STDIN` aufgerufen wurde.
+- **Remote-Aufruf**: Bei `curl … | bash` oder `bash <(curl …)` lädt es transparent die aktuelle [`install_gptcode.sh`](./install_gptcode.sh) aus dem Repository (Standard: `main`-Branch via `https://raw.githubusercontent.com/CoYoDuDe/GPTCode/main`).
+- **Lokaler Aufruf**: Liegt das Repository bereits auf der Platte, wird die mitgelieferte `install_gptcode.sh` direkt gestartet.
+
+Optional lässt sich die Quelle über `GPTCODE_INSTALL_REPO_URL=<eigene-URL>` überschreiben (z. B. für Forks oder gepinnte Releases).
+
 ```bash
 curl -fsSL https://raw.githubusercontent.com/CoYoDuDe/GPTCode/main/install.sh | sudo bash
 ```

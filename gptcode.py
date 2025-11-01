@@ -16,6 +16,8 @@ CONFIG_DIR = Path(os.path.expanduser("~/.config/gptcode"))
 CONFIG_FILE = CONFIG_DIR / "config.json"
 DEFAULT_MODEL = "gpt-4o-mini"
 DEFAULT_TIMEOUT = int(os.getenv("GPTCODE_TIMEOUT", "60"))  # sec
+DOCKER_LEGACY_ENV = "GPTCODE_DOCKER_COMPOSE_LEGACY"
+_DOCKER_COMPOSE_CMD: Optional[List[str]] = None
 
 
 def check_runtime_prerequisites() -> None:
@@ -212,10 +214,46 @@ def systemctl(action: str, unit: str) -> str:
     except Exception as e:
         return f"[systemctl] Fehler: {e}"
 
+def resolve_docker_compose_base() -> List[str]:
+    """Bestimmt die Compose-Basisbefehle und cached das Ergebnis."""
+
+    global _DOCKER_COMPOSE_CMD
+    if _DOCKER_COMPOSE_CMD is not None:
+        return _DOCKER_COMPOSE_CMD
+
+    legacy_override = os.getenv(DOCKER_LEGACY_ENV)
+    if legacy_override:
+        candidate = legacy_override.strip()
+        if candidate and (shutil.which(candidate) or Path(candidate).exists()):
+            _DOCKER_COMPOSE_CMD = [candidate]
+            return _DOCKER_COMPOSE_CMD
+
+    try:
+        proc = subprocess.run(
+            ["docker", "compose", "version"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        if proc.returncode == 0:
+            _DOCKER_COMPOSE_CMD = ["docker", "compose"]
+            return _DOCKER_COMPOSE_CMD
+    except FileNotFoundError:
+        pass
+
+    legacy = shutil.which("docker-compose")
+    if legacy:
+        _DOCKER_COMPOSE_CMD = [legacy]
+        return _DOCKER_COMPOSE_CMD
+
+    _DOCKER_COMPOSE_CMD = ["docker", "compose"]
+    return _DOCKER_COMPOSE_CMD
+
+
 def docker_compose(action: str, service: Optional[str]=None) -> str:
     if action not in {"up","down","build","logs"}:
         return f"[docker] Ungültige Action: {action}"
-    base = ["docker","compose"]
+    base = resolve_docker_compose_base()
     if action == "up":
         cmd = base + ["up","-d"] + ([service] if service else [])
     elif action == "down":

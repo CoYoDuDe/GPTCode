@@ -24,11 +24,13 @@
 ### Voraussetzungen
 - Debian/Ubuntu mit `python3`, `python3-venv`, `python3-pip`.
 - OpenAI API-Key (wird beim ersten Start abgefragt).
-- Optional: `docker` + `docker compose` für Container-Workloads, `pytest` für Tests.
+- Optional: `docker` + `docker compose` für Container-Workloads (automatische Fallbacks auf ein vorhandenes `docker-compose`-Binary sind integriert), `pytest` für Tests.
 
 ### Voraussetzungen prüfen
 Beim Start führt GPTCode einen schnellen Werkzeug-Check durch und beendet sich mit einer Fehlermeldung, falls `git` oder `docker`
-im `PATH` fehlen. Für `pytest` wird eine optionale Warnung ausgegeben – Tests lassen sich erst nach Installation ausführen.
+im `PATH` fehlen. Für Compose-Stacks versucht GPTCode zuerst `docker compose` und nutzt – falls nicht verfügbar – automatisch ein
+erkanntes `docker-compose`-Binary (der Installer hinterlegt Legacy-Pfade für nachfolgende Aufrufe). Für `pytest` wird eine
+optionale Warnung ausgegeben – Tests lassen sich erst nach Installation ausführen.
 Nutze die Hinweise im Fehlertext (z. B. `sudo apt install git` oder die offiziellen Docker/pytest-Dokumentationen), um fehlende
 Pakete nachzurüsten, bevor du erneut startest.
 

@@ -17,5 +17,5 @@ folgt dem [SemVer](https://semver.org/lang/de/) Versionsschema.
 - `docs/RELEASE_TEMPLATE.md` ergänzt, um reproduzierbare Release- und Git-Tag-Abläufe sicherzustellen.
 - `README.md` um Hinweise auf Versionsdatei und Changelog erweitert.
 
-[Unreleased]: https://example.com/compare/v0.1.0...HEAD
-[0.1.0]: https://example.com/releases/tag/v0.1.0
+[Unreleased]: https://github.com/CoYoDuDe/GPTCode/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/CoYoDuDe/GPTCode/releases/tag/v0.1.0

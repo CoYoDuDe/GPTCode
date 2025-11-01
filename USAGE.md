@@ -102,6 +102,9 @@ Die folgenden Szenarien zeigen komplette Ablaufketten, die du GPTCode vorgeben k
    - Optional `journalctl -u my-service.service -n 20` anfordern.
 
 ### Container-Stacks mit `docker compose`
+> 💡 GPTCode prüft automatisch, ob das Docker-Compose-Plugin verfügbar ist. Falls nur das Legacy-Binary `docker-compose`
+> gefunden wird, verwendet es dieses transparent weiter. Der systemweite Installer speichert den Pfad unter
+> `/opt/gptcode/docker_compose_legacy_bin` und setzt bei Aufruf das Umgebungsflag `GPTCODE_DOCKER_COMPOSE_LEGACY`.
 1. **Ziel formulieren**
    ```text
    Aktualisiere den Docker-Compose-Stack, führe `docker compose pull`, `docker compose up -d` und anschließend `docker compose ps` aus.

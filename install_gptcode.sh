@@ -60,6 +60,7 @@ if [[ "${EUID:-$(id -u)}" -ne 0 ]]; then
 fi
 
 missing=0
+legacy_compose_bin=""
 
 if ! command -v git >/dev/null 2>&1; then
   echo "[HINWEIS] git wurde nicht gefunden und wird über apt-get installiert." >&2
@@ -71,7 +72,8 @@ if ! command -v docker >/dev/null 2>&1; then
 else
   if ! docker compose version >/dev/null 2>&1; then
     if command -v docker-compose >/dev/null 2>&1; then
-      echo "[HINWEIS] docker compose (Plugin) nicht gefunden, verwende vorhandenes docker-compose Binary." >&2
+      legacy_compose_bin="$(command -v docker-compose)"
+      echo "[HINWEIS] docker compose (Plugin) nicht gefunden. Verwende Legacy-Binary '${legacy_compose_bin}' und hinterlege den Pfad für GPTCode." >&2
     else
       echo "[FEHLT] 'docker compose' nicht verfügbar. Installationshinweis: https://docs.docker.com/compose/install/" >&2
       missing=1
@@ -92,6 +94,13 @@ apt-get update -y
 apt-get install -y python3 python3-venv python3-pip git ca-certificates
 
 mkdir -p "$APP_DIR" "$BIN_DIR"
+
+legacy_hint_file="$APP_DIR/docker_compose_legacy_bin"
+if [[ -n "$legacy_compose_bin" ]]; then
+  printf '%s\n' "$legacy_compose_bin" > "$legacy_hint_file"
+else
+  rm -f "$legacy_hint_file"
+fi
 
 if (( REMOTE_INSTALL )); then
   echo "[INFO] Lade GPTCode (${DESIRED_REF}) nach $TEMP_WORKDIR ..."
@@ -138,6 +147,10 @@ wrapper="$BIN_DIR/gptcode"
 backup_file "$wrapper"
 cat > "$wrapper" <<'SH'
 #!/usr/bin/env bash
+LEGACY_HINT_FILE="/opt/gptcode/docker_compose_legacy_bin"
+if [[ -z "${GPTCODE_DOCKER_COMPOSE_LEGACY:-}" && -f "$LEGACY_HINT_FILE" ]]; then
+  export GPTCODE_DOCKER_COMPOSE_LEGACY="$(<"$LEGACY_HINT_FILE")"
+fi
 exec /opt/gptcode/venv/bin/python -m gptcode "$@"
 SH
 chmod +x "$wrapper"
